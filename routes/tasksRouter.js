@@ -6,27 +6,24 @@ const {
   updateTask,
   deleteTask,
 } = require("../controllers/tasksControllers");
+const { validateBody } = require("../utils/validateBody");
+
+const {
+  createTaskValidationSchema,
+  updateTaskValidationSchema,
+} = require("../utils/validation/taskValidationSchema");
 
 const router = express.Router();
-router.route("/").get(getTasks).post(createTask);
-router.route("/:taskId").get(getTask).patch(updateTask).delete(deleteTask);
+router
+  .route("/")
+  .get(getTasks)
+  .post(validateBody(createTaskValidationSchema), createTask);
 
-// router.get("/", getTasks);
-
-// router.get(`/:taskId`, getTask);
-
-// router.post(
-// "/",
-//   (req, res, next) => {
-//     console.log("Hello from middleware!");
-//     next();
-//   },
-// createTask;
-// );
-
-// router.patch("/:taskId", updateTask);
-
-// router.delete("/:taskId", deleteTask);
+router
+  .route("/:taskId")
+  .get(getTask)
+  .patch(validateBody(updateTaskValidationSchema), updateTask)
+  .delete(deleteTask);
 
 module.exports = {
   tasksRouter: router,

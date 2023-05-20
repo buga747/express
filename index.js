@@ -1,9 +1,15 @@
 require("dotenv").config();
-// require("dotenv").config({ path: "/custom/path/to/.env" });
+const mongoose = require("mongoose");
 const { app } = require("./app");
 
-const { PORT } = process.env;
+const { PORT, DB_URI } = process.env;
 
-app.listen(PORT, () => {
-  console.log(`Server is up and running on port ${PORT}`);
-});
+(async () => {
+  await mongoose.connect(DB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  app.listen(PORT, () => {
+    console.log(`Server is up and running on port ${PORT}`);
+  });
+})();
