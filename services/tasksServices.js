@@ -1,16 +1,17 @@
-const fs = require("fs/promises");
-const path = require("path");
-const crypto = require("crypto");
 const { HttpError } = require("../utils/HttpError");
 
 const { Task } = require("../models/Task");
 
-// const tasksPath = path.join(__dirname, "..", 'db', 'tasks.json')
-
-const getTasksService = async () => {
-  return await Task.find();
+const getTasksService = async (page, limit, completed) => {
+  const skip = (page - 1) * limit;
+  const filter = {};
+  if (completed === "true") {
+    filter.completed = true;
+  } else if (completed === "false") {
+    filter.completed = false;
+  }
+  return await Task.find(filter).skip(skip).limit(limit);
 };
-
 const getTaskService = async (id) => {
   const task = await Task.findById(id);
 
