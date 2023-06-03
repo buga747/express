@@ -12,18 +12,19 @@ const {
   createTaskValidationSchema,
   updateTaskValidationSchema,
 } = require("../utils/validation/taskValidationSchema");
+const { auth } = require("../middlawares/auth");
 
 const router = express.Router();
 router
   .route("/")
-  .get(getTasks)
+  .get(auth, getTasks)
   .post(validateBody(createTaskValidationSchema), createTask);
 
 router
   .route("/:taskId")
-  .get(getTask)
-  .patch(validateBody(updateTaskValidationSchema), updateTask)
-  .delete(deleteTask);
+  .get(auth, getTask)
+  .patch(validateBody(updateTaskValidationSchema), auth, updateTask)
+  .delete(auth, deleteTask);
 
 module.exports = {
   tasksRouter: router,
