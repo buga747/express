@@ -1,40 +1,40 @@
-const { User } = require("../models/User");
 const { HttpError } = require("../utils/HttpError");
-const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
-
 const jwt = require("jsonwebtoken");
+const { User } = require("../models/User");
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
 const { asignTokens } = require("../utils/asignTokens");
 
 const auth = async (req, res, next) => {
   const { authorization = "" } = req.headers;
-
   const [bearer, token] = authorization.split(" ");
-
-  if (bearer != "Bearer") {
+  if (bearer !== "Bearer" || !token) {
     return next(new HttpError(401, "Invalid token"));
   }
 
   let fetchedUser;
-  try {
-    const decoded = jwt.decode(token);
-    fetchedUser = await User.findById(decoded.id);
 
+  try {
+    const decodedPayload = jwt.decode(token);
+    fetchedUser = await User.findById(decodedPayload.id);
     if (!fetchedUser || !fetchedUser.refresh_token) {
-      return next(new HttpError(401, "User not found or not logged in"));
+      return next(
+        new HttpError(401, "User is not found or refresh token is unvalid")
+      );
     }
 
     jwt.verify(token, ACCESS_TOKEN_SECRET);
+
     req.user = fetchedUser;
     next();
-  } catch (error) {
-    if (error.name !== "TokenExpiredError") {
-      return next(new HttpError(401, error.message));
+  } catch (err) {
+    if (err.name !== "TokenExpiredError") {
+      return next(new HttpError(401, err.message));
     }
 
     try {
       jwt.verify(fetchedUser.refresh_token, REFRESH_TOKEN_SECRET);
-      const { accessToken, refreshToken } = asignTokens(fetchedUser);
 
+      const { accessToken, refreshToken } = asignTokens(fetchedUser);
       await User.findByIdAndUpdate(fetchedUser._id, {
         refresh_token: refreshToken,
       });
@@ -46,7 +46,7 @@ const auth = async (req, res, next) => {
         },
         accessToken,
       });
-    } catch (error) {
+    } catch (err) {
       return next(new HttpError(401, "Refresh token is expired"));
     }
   }

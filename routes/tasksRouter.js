@@ -18,12 +18,12 @@ const router = express.Router();
 router
   .route("/")
   .get(auth, getTasks)
-  .post(validateBody(createTaskValidationSchema), createTask);
+  .post(auth, validateBody(createTaskValidationSchema), createTask);
 
 router
   .route("/:taskId")
   .get(auth, getTask)
-  .patch(validateBody(updateTaskValidationSchema), auth, updateTask)
+  .patch(auth, validateBody(updateTaskValidationSchema), auth, updateTask)
   .delete(auth, deleteTask);
 
 module.exports = {
